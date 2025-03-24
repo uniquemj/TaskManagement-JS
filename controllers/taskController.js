@@ -3,7 +3,12 @@ const taskModel = require('../models/todoModel')
 
 const getAllTask = async(req, res) =>{
     try{
-        const tasks = await taskModel.find({})
+        const {title} = req.query
+        const tasks = await taskModel.find(title?{$text: {$search: title, $caseSensitive: false }}:{})
+        if(tasks.length == 0){
+            return res.status(404).send({message:"No Tasks were found."})
+        }
+
         return res.status(200).send({
             count: tasks.length,
             data: tasks
@@ -17,6 +22,11 @@ const getTaskById = async(req, res) =>{
     try{
         const {id} = req.params
         const task = await taskModel.findById(id)
+        
+        if(!task){
+            return res.status(404).send({message:"Task not found"})
+        }
+
         return res.status(200).send(task)
     } catch(e){
         res.status(500).send({message: e.message})
