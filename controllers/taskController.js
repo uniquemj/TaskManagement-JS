@@ -1,10 +1,10 @@
-const taskModel = require('../models/todoModel')
+const {createTaskService, getAllTasksService, getTaskByIdService, editTaskService, removeTaskService} = require('../services/todoServices')
 
 
 const getAllTask = async(req, res) =>{
     try{
         const {title} = req.query
-        const tasks = await taskModel.find(title?{$text: {$search: title, $caseSensitive: false }}:{})
+        const tasks = await getAllTasksService(title)
         if(tasks.length == 0){
             return res.status(404).send({message:"No Tasks were found."})
         }
@@ -21,7 +21,7 @@ const getAllTask = async(req, res) =>{
 const getTaskById = async(req, res) =>{
     try{
         const {id} = req.params
-        const task = await taskModel.findById(id)
+        const task = await getTaskByIdService(id)
         
         if(!task){
             return res.status(404).send({message:"Task not found"})
@@ -41,7 +41,7 @@ const createTask = async (req, res) =>{
             return res.status(400).send({"message":"title is required"})
         }
         
-        const createdTask = await taskModel.create({
+        const createdTask = await createTaskService({
             title: title,
             description: description || "",
             is_completed: is_completed || false
@@ -57,7 +57,7 @@ const editTask = async(req, res) =>{
     try{
         const {id} = req.params
 
-        const result = await taskModel.findOneAndUpdate({_id: id}, req.body, {new: true})
+        const result = await editTaskService(id, req.body)
 
         if(!result){
             return res.status(404).send({message:"Task not found"})
@@ -71,7 +71,7 @@ const editTask = async(req, res) =>{
 const removeTask = async(req, res) =>{
     try{
         const {id} = req.params
-        const result = await taskModel.findByIdAndDelete(id)
+        const result = await removeTaskService(id)
         if(!result){
             return res.status(404).send({message:"Task not found"})
         }
